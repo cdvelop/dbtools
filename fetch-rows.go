@@ -19,41 +19,25 @@ func FetchOne(rows *sql.Rows) (map[string]string, error) {
 		return nil, err
 	}
 
-	defer rows.Close()
 	if err := rows.Close(); err != nil {
 		return nil, err
 	}
 	return row, nil
 }
 
-//FetchAll .
 func FetchAll(rows *sql.Rows) ([]map[string]string, error) {
-	var columns []string
-	var columnCount int
-	var err error
-
 	rowArray := make([]map[string]string, 0)
-	processedRows := 0
 
-	for rows.Next() {
-		// Read columns on first row only
-		if processedRows == 0 {
-			columns, err = rows.Columns()
-			if err != nil {
-				return nil, err
-			}
-			columnCount = len(columns)
-		}
-		row, err := ScanOne(rows, columnCount, columns)
+	for {
+		row, err := FetchOne(rows)
 		if err != nil {
 			return nil, err
 		}
+		if row == nil {
+			break
+		}
 		rowArray = append(rowArray, row)
-		processedRows++
 	}
-	///Sin filas: devuelve cero en lugar de un mapa vacío []
-	if processedRows == 0 {
-		return nil, nil
-	}
+
 	return rowArray, nil
 }

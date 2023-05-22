@@ -7,25 +7,21 @@ import (
 
 // ScanOne
 func ScanOne(rows *sql.Rows, columnCount int, columns []string) (map[string]string, error) {
-	scanFrom := make([]interface{}, columnCount)
 	values := make([]interface{}, columnCount)
-	for i := range scanFrom {
-		scanFrom[i] = &values[i]
+	for i := range values {
+		values[i] = new(interface{})
 	}
-	err := rows.Scan(scanFrom...)
+	err := rows.Scan(values...)
 	if err != nil {
 		return nil, err
 	}
-	row := make(map[string]string)
-	//Construye el mapa asociativo a partir de valores y nombres de columna
-	for i := range values {
-		if values[i] == nil {
+	row := make(map[string]string, columnCount)
+	for i, value := range values {
+		if *value.(*interface{}) == nil {
 			row[columns[i]] = ""
-			// log.Printf("valor nulo")
 		} else {
-			row[columns[i]] = fmt.Sprint((values[i]))
+			row[columns[i]] = fmt.Sprintf("%v", *value.(*interface{}))
 		}
-		// row[columns[i]] = values[i]
 	}
 	return row, nil
 }
