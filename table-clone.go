@@ -11,8 +11,8 @@ import (
 )
 
 // ClonDATABLE copia la data de una tabla a otra nueva
-func ClonDATABLE(dba dbAdapter, o OrmAdapter, table model.Object) bool {
-	db := dba.Open()
+func ClonDATABLE(o dboAdapter, table model.Object) bool {
+	db := o.Open()
 	defer db.Close()
 	// fmt.Printf("Clon Object: %v\n", table.Name)
 
@@ -26,7 +26,7 @@ func ClonDATABLE(dba dbAdapter, o OrmAdapter, table model.Object) bool {
 
 	defer tx.Rollback()
 
-	if !ClonOneTableInTransaction(dba, o, table, tx, ctx) {
+	if !ClonOneTableInTransaction(o, table, tx, ctx) {
 		tx.Rollback()
 		return false
 	}
@@ -44,7 +44,7 @@ func ClonDATABLE(dba dbAdapter, o OrmAdapter, table model.Object) bool {
 }
 
 // ClonOneTableInTransaction copia la data de una tabla a otra nueva
-func ClonOneTableInTransaction(dba dbAdapter, o OrmAdapter, table model.Object, tx *sql.Tx, ctx context.Context) bool {
+func ClonOneTableInTransaction(o dboAdapter, table model.Object, tx *sql.Tx, ctx context.Context) bool {
 
 	// fmt.Printf("Clon Object: %v\n", table.Name)
 	var ok bool
@@ -74,7 +74,7 @@ func ClonOneTableInTransaction(dba dbAdapter, o OrmAdapter, table model.Object, 
 
 	// knames, ok = tx.getallOBJ(&q, &ctx)
 	var knames = make([]map[string]string, 0)
-	if knames, ok = SelectAll(sqlOldField, dba, ctx); !ok { //entrega nombre columnas de la tabla
+	if knames, ok = SelectAll(sqlOldField, o, ctx); !ok { //entrega nombre columnas de la tabla
 		tx.Rollback()
 		return false
 	}

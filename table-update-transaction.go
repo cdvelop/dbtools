@@ -10,13 +10,13 @@ import (
 )
 
 // UpdateTABLES revisa si tienen data las tablas para actualizarlas y respaldar la data
-func UpdateTablesTransaction(dba dbAdapter, o OrmAdapter, tx *sql.Tx, ctx context.Context, tables ...model.Object) bool {
+func UpdateTablesTransaction(o dboAdapter, tx *sql.Tx, ctx context.Context, tables ...model.Object) bool {
 
 	for _, table := range tables {
 		//consulta entrega columna nombre
 		q := fmt.Sprintf(o.SQLTableInfo(), table.Name)
 		// tableInfo, ok := objectdb.QueryOne(q)
-		tableInfo, ok := SelectOne(q, dba, ctx)
+		tableInfo, ok := SelectOne(q, o, ctx)
 
 		if !ok {
 			return false
@@ -27,7 +27,7 @@ func UpdateTablesTransaction(dba dbAdapter, o OrmAdapter, tx *sql.Tx, ctx contex
 				return false
 			}
 		} else { //revisar tabla consultar si tiene data
-			if list, ok := SelectOne("SELECT * FROM "+table.Name+";", dba, ctx); ok {
+			if list, ok := SelectOne("SELECT * FROM "+table.Name+";", o, ctx); ok {
 
 				if len(list) == 0 { //lista sin data borramos tabla y la creamos nuevamente para no chequearla
 					if DeleteTableInTransaction(table, o, tx, ctx) {
@@ -44,7 +44,7 @@ func UpdateTablesTransaction(dba dbAdapter, o OrmAdapter, tx *sql.Tx, ctx contex
 				} else { //lista con data hay que actualizar
 					// fmt.Printf("CLon Tabla: %v list: %v\n", table.Name, list)
 					// log.Printf("tabla %v con data. hay que verificar", table.Name)
-					if !ClonOneTableInTransaction(dba, o, table, tx, ctx) { //clonamos la tabla con data a la nueva
+					if !ClonOneTableInTransaction(o, table, tx, ctx) { //clonamos la tabla con data a la nueva
 						log.Fatalf("!!! error al copiar la data tabla " + table.Name)
 						return false
 					}

@@ -2,6 +2,11 @@ package dbtools
 
 import "database/sql"
 
+type dboAdapter interface {
+	dbAdapter
+	OrmAdapter
+}
+
 type dbAdapter interface {
 	Open() *sql.DB
 }
