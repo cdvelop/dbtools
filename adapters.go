@@ -21,4 +21,6 @@ type OrmAdapter interface {
 	SQLColumName() string
 	// SQLDropTable() string //sql de eliminación de tabla
 	SQLDropTable() string
+	//ej: pg: DROP TABLE IF EXISTS $1 CASCADE; sqlite:
+	DropTable() string
 }

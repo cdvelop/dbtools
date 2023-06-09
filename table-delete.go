@@ -21,11 +21,11 @@ func DeleteDataFromTABLE(dba dbAdapter, table_name string) {
 }
 
 // DeleteTABLE elimina tabla de una base de datos
-func DeleteTABLE(dba dbAdapter, table_name string) {
-	db := dba.Open()
+func DeleteTABLE(o dboAdapter, table_name string) {
+	db := o.Open()
 	defer db.Close()
-	sql := fmt.Sprintf("DROP TABLE IF EXISTS %v CASCADE;", table_name)
-	if _, err := db.Exec(sql); err != nil {
+
+	if _, err := db.Exec(o.DropTable(), table_name); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf(">>> Tabla %v eliminada\n", table_name)
