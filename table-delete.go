@@ -26,7 +26,7 @@ func DeleteTABLE(o dboAdapter, table_name string) {
 	defer db.Close()
 
 	if _, err := db.Exec(o.DropTable(), table_name); err != nil {
-		log.Fatal(err)
+		log.Fatal("Error DeleteTABLE: ", err)
 	}
 	fmt.Printf(">>> Tabla %v eliminada\n", table_name)
 }
