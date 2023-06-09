@@ -3,6 +3,9 @@ package dbtools
 import "database/sql"
 
 type OrmAdapter interface {
+	//ej postgres:"$1", sqlite: "?"
+	PlaceHolders(index ...uint8) string
+	DeleteDataBase()
 	SQLTableInfo() string
 	SQLColumName() string
 	SQLDropTable() string
