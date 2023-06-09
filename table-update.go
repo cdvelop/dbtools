@@ -8,13 +8,16 @@ import (
 )
 
 // UpdateTABLES revisa si tienen data las tablas para actualizarlas y respaldar la data
-func (o operation) UpdateTABLES(tables ...model.Object) bool {
+func UpdateTABLES(dba dbAdapter, o OrmAdapter, tables ...model.Object) bool {
+	db := dba.Open()
+	defer db.Close()
+
 	for _, table := range tables {
 
 		//consulta entrega columna nombre
 		q := fmt.Sprintf(o.SQLTableInfo(), table.Name)
 
-		rows, err := o.DB.Query(q)
+		rows, err := db.Query(q)
 		if err != nil {
 			fmt.Println(err)
 			return false
@@ -27,10 +30,10 @@ func (o operation) UpdateTABLES(tables ...model.Object) bool {
 		}
 
 		if len(tableInfo) == 0 { //si no existe crear tabla nueva
-			o.CreateOneTABLE(table)
+			CreateOneTABLE(dba, table)
 		} else { //revisar tabla consultar si tiene data
 
-			rows, err := o.DB.Query("SELECT * FROM " + table.Name + ";")
+			rows, err := db.Query("SELECT * FROM " + table.Name + ";")
 			if err != nil {
 				fmt.Println(err)
 				return false
@@ -47,14 +50,14 @@ func (o operation) UpdateTABLES(tables ...model.Object) bool {
 
 				fmt.Printf(">>> Borrando tabla: %v", table.Name)
 
-				if _, err := o.DB.Exec(q); err != nil {
+				if _, err := db.Exec(q); err != nil {
 					log.Fatalf("!!! Error al borrar tabla DROP TABLE: %v %v", table.Name, err)
 					return false
 				}
 
 				fmt.Printf(">>> tabla %v sin data borrada\n", table.Name)
 
-				if !o.CreateOneTABLE(table) {
+				if !CreateOneTABLE(dba, table) {
 					return false
 				}
 				fmt.Printf(">>> tabla %v creada\n", table.Name)
@@ -62,7 +65,7 @@ func (o operation) UpdateTABLES(tables ...model.Object) bool {
 			} else { //lista con data hay que actualizar
 				// fmt.Printf("CLon Tabla: %v list: %v\n", table.Name, list)
 				// log.Printf("tabla %v con data. hay que verificar", table.Name)
-				if !o.ClonDATABLE(table) { //clonamos la tabla con data a la nueva
+				if !ClonDATABLE(dba, o, table) { //clonamos la tabla con data a la nueva
 					log.Fatalf("!!! error al copiar la data tabla " + table.Name)
 					return false
 				}

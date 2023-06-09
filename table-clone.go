@@ -11,12 +11,14 @@ import (
 )
 
 // ClonDATABLE copia la data de una tabla a otra nueva
-func (o operation) ClonDATABLE(table model.Object) bool {
+func ClonDATABLE(dba dbAdapter, o OrmAdapter, table model.Object) bool {
+	db := dba.Open()
+	defer db.Close()
 	// fmt.Printf("Clon Object: %v\n", table.Name)
 
 	// `tx` es una instancia de` * sql.Tx` a través de la cual podemos ejecutar nuestras consultas
 	ctx := context.Background()
-	tx, err := o.DB.BeginTx(ctx, nil) // Crea un nuevo contexto y comienza una transacción
+	tx, err := db.BeginTx(ctx, nil) // Crea un nuevo contexto y comienza una transacción
 	if err != nil {
 		log.Println(err)
 		return false
@@ -24,7 +26,7 @@ func (o operation) ClonDATABLE(table model.Object) bool {
 
 	defer tx.Rollback()
 
-	if !o.ClonOneTableInTransaction(table, tx, ctx) {
+	if !ClonOneTableInTransaction(dba, o, table, tx, ctx) {
 		tx.Rollback()
 		return false
 	}
@@ -42,7 +44,8 @@ func (o operation) ClonDATABLE(table model.Object) bool {
 }
 
 // ClonOneTableInTransaction copia la data de una tabla a otra nueva
-func (o operation) ClonOneTableInTransaction(table model.Object, tx *sql.Tx, ctx context.Context) bool {
+func ClonOneTableInTransaction(dba dbAdapter, o OrmAdapter, table model.Object, tx *sql.Tx, ctx context.Context) bool {
+
 	// fmt.Printf("Clon Object: %v\n", table.Name)
 	var ok bool
 	tableTempName := `tabtemp`
@@ -71,7 +74,7 @@ func (o operation) ClonOneTableInTransaction(table model.Object, tx *sql.Tx, ctx
 
 	// knames, ok = tx.getallOBJ(&q, &ctx)
 	var knames = make([]map[string]string, 0)
-	if knames, ok = SelectAll(sqlOldField, o.DB, ctx); !ok { //entrega nombre columnas de la tabla
+	if knames, ok = SelectAll(sqlOldField, dba, ctx); !ok { //entrega nombre columnas de la tabla
 		tx.Rollback()
 		return false
 	}

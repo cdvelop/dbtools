@@ -11,7 +11,10 @@ import (
 )
 
 // CreateAllTABLES crea todas las tablas de la base de datos
-func (o operation) CreateAllTABLES(tables ...model.Object) (ok bool) {
+func CreateAllTABLES(dba dbAdapter, tables ...model.Object) (ok bool) {
+	db := dba.Open()
+	defer db.Close()
+
 	var sql []string
 
 	if len(tables) == 0 {
@@ -27,7 +30,7 @@ func (o operation) CreateAllTABLES(tables ...model.Object) (ok bool) {
 	q := strings.Join(sql, "\n")
 	// log.Printf(">>> sql final %v", q)
 
-	if _, err := o.DB.Exec(q); err != nil {
+	if _, err := db.Exec(q); err != nil {
 		log.Fatalf("ERROR EN LA CREACIÓN DE TABLAS EN BASE DE DATOS, FUNCIÓN: CreateAllTABLES %v", err)
 		return
 	}
@@ -37,10 +40,13 @@ func (o operation) CreateAllTABLES(tables ...model.Object) (ok bool) {
 }
 
 // CreateOneTABLE según nombre tabla y solo con un id_nombretabla correlativo por defecto
-func (o operation) CreateOneTABLE(table model.Object) bool {
+func CreateOneTABLE(dba dbAdapter, table model.Object) bool {
+	db := dba.Open()
+	defer db.Close()
+
 	sql := makeSQLCreaTABLE(table)
 
-	if _, err := o.DB.Exec(sql); err != nil {
+	if _, err := db.Exec(sql); err != nil {
 		log.Fatalf("Error al Crear tabla %v %v", table.Name, err)
 		return false
 	}
