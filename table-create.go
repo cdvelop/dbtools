@@ -51,7 +51,7 @@ func CreateOneTABLE(dba dbAdapter, table model.Object) bool {
 		return false
 	}
 
-	fmt.Printf(">>> Tabla: " + table.Name + " creada")
+	fmt.Println(">>> Tabla: " + table.Name + " creada")
 
 	return true
 }
@@ -64,7 +64,7 @@ func CreateTableInTransaction(table model.Object, tx *sql.Tx, ctx context.Contex
 		return false
 	}
 
-	fmt.Printf(">>> Creando tabla: %v en db", table.Name)
+	fmt.Printf(">>> Creando tabla: %v en db\n", table.Name)
 	return true
 }
 
@@ -78,7 +78,6 @@ func makeSQLCreaTABLE(table model.Object) (sql string) {
 }
 
 // sql de creación de tabla
-func makesqlcretetable(table_name, column string) (sql string) {
-	sql = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %v (%v);", table_name, column)
-	return
+func makesqlcretetable(table_name, column string) string {
+	return fmt.Sprintf("CREATE TABLE IF NOT EXISTS %v (%v);", table_name, column)
 }
