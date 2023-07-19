@@ -7,7 +7,7 @@ import (
 	"github.com/cdvelop/model"
 )
 
-func createSqlListByField(table model.Object) (sqlist, keyList []string) {
+func createSqlListByField(table *model.Object) (sqlist, keyList []string) {
 	var (
 		defaulType     string   //TEXT tipo por defecto en base de datos
 		foreignKeyList []string //FOREIGN KEY si los hay

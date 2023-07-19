@@ -4,21 +4,20 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/cdvelop/model"
 )
 
 // CreateAllTABLES crea todas las tablas de la base de datos
-func CreateAllTABLES(dba dbAdapter, tables ...model.Object) (ok bool) {
+func CreateAllTABLES(dba dbAdapter, tables ...*model.Object) error {
 	db := dba.Open()
 	defer db.Close()
 
 	var sql []string
 
 	if len(tables) == 0 {
-		log.Fatalln("Error No hay tablas ingresadas a AddAllTablesToIndexDb")
+		return fmt.Errorf("error no hay objetos ingresados para crear tablas")
 	}
 
 	//todo el sql por tabla
@@ -31,45 +30,42 @@ func CreateAllTABLES(dba dbAdapter, tables ...model.Object) (ok bool) {
 	// log.Printf(">>> sql final %v", q)
 
 	if _, err := db.Exec(q); err != nil {
-		log.Fatalf("ERROR EN LA CREACIÓN DE TABLAS EN BASE DE DATOS, FUNCIÓN: CreateAllTABLES %v", err)
-		return
+		return fmt.Errorf("ERROR EN LA CREACIÓN DE TABLAS EN BASE DE DATOS, FUNCIÓN: CreateAllTABLES %v", err)
 	}
 
-	ok = true
-	return
+	return nil
 }
 
 // CreateOneTABLE según nombre tabla y solo con un id_nombretabla correlativo por defecto
-func CreateOneTABLE(dba dbAdapter, table model.Object) bool {
+func CreateOneTABLE(dba dbAdapter, table *model.Object) error {
 	db := dba.Open()
 	defer db.Close()
 
 	sql := makeSQLCreaTABLE(table)
 
 	if _, err := db.Exec(sql); err != nil {
-		log.Fatalf("Error al Crear tabla %v %v", table.Name, err)
-		return false
+		return fmt.Errorf("error al crear tabla %v %v", table.Name, err)
 	}
 
 	fmt.Println(">>> Tabla: " + table.Name + " creada")
 
-	return true
+	return nil
 }
 
-func CreateTableInTransaction(table model.Object, tx *sql.Tx, ctx context.Context) bool {
+func CreateTableInTransaction(table *model.Object, tx *sql.Tx, ctx context.Context) error {
 	sqlNewTable := makeSQLCreaTABLE(table)
 	_, err := tx.ExecContext(ctx, sqlNewTable)
 	if err != nil {
 		tx.Rollback()
-		return false
+		return err
 	}
 
 	fmt.Printf(">>> Creando tabla: %v en db\n", table.Name)
-	return true
+	return nil
 }
 
 // makeSQLCreaTABLE crea string sql crea tabla
-func makeSQLCreaTABLE(table model.Object) (sql string) {
+func makeSQLCreaTABLE(table *model.Object) string {
 	keyLisTO, _ := createSqlListByField(table)
 
 	column := strings.Join(keyLisTO, ", ")

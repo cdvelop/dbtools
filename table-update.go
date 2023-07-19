@@ -2,13 +2,12 @@ package dbtools
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/cdvelop/model"
 )
 
 // UpdateTABLES revisa si tienen data las tablas para actualizarlas y respaldar la data
-func UpdateTABLES(o dboAdapter, tables ...model.Object) bool {
+func UpdateTABLES(o dboAdapter, tables ...*model.Object) error {
 	db := o.Open()
 	defer db.Close()
 
@@ -19,14 +18,12 @@ func UpdateTABLES(o dboAdapter, tables ...model.Object) bool {
 
 		rows, err := db.Query(q)
 		if err != nil {
-			fmt.Println(err)
-			return false
+			return err
 		}
 
 		tableInfo, err := FetchOne(rows)
 		if err != nil {
-			fmt.Println(err)
-			return false
+			return err
 		}
 
 		if len(tableInfo) == 0 { //si no existe crear tabla nueva
@@ -35,14 +32,12 @@ func UpdateTABLES(o dboAdapter, tables ...model.Object) bool {
 
 			rows, err := db.Query("SELECT * FROM " + table.Name + ";")
 			if err != nil {
-				fmt.Println(err)
-				return false
+				return err
 			}
 
 			list, err := FetchOne(rows)
 			if err != nil {
-				fmt.Println(err)
-				return false
+				return err
 			}
 
 			if len(list) == 0 { //lista sin data borramos tabla y la creamos nuevamente para no chequearla
@@ -51,30 +46,30 @@ func UpdateTABLES(o dboAdapter, tables ...model.Object) bool {
 				fmt.Printf(">>> Borrando tabla: %v", table.Name)
 
 				if _, err := db.Exec(q); err != nil {
-					log.Fatalf("!!! Error al borrar tabla DROP TABLE: %v %v", table.Name, err)
-					return false
+					return fmt.Errorf("!!! Error al borrar tabla DROP TABLE: %v %v", table.Name, err)
 				}
 
 				fmt.Printf(">>> tabla %v sin data borrada\n", table.Name)
 
-				if !CreateOneTABLE(o, table) {
-					return false
+				err := CreateOneTABLE(o, table)
+				if err != nil {
+					return err
 				}
+
 				fmt.Printf(">>> tabla %v creada\n", table.Name)
 
 			} else { //lista con data hay que actualizar
 				// fmt.Printf("CLon Tabla: %v list: %v\n", table.Name, list)
 				// log.Printf("tabla %v con data. hay que verificar", table.Name)
-				if !ClonDATABLE(o, table) { //clonamos la tabla con data a la nueva
-					log.Fatalf("!!! error al copiar la data tabla " + table.Name)
-					return false
+				//clonamos la tabla con data a la nueva
+				err := ClonDATABLE(o, table)
+				if err != nil {
+					return err
 				}
 			}
-
 		}
-
 	} //* ****tablas*****
 
 	fmt.Println(">>> actualización de tablas completada")
-	return true
+	return nil
 }

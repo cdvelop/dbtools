@@ -4,14 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/cdvelop/model"
 )
 
 // ClonDATABLE copia la data de una tabla a otra nueva
-func ClonDATABLE(o dboAdapter, table model.Object) bool {
+func ClonDATABLE(o dboAdapter, table *model.Object) error {
 	db := o.Open()
 	defer db.Close()
 	// fmt.Printf("Clon Object: %v\n", table.Name)
@@ -20,15 +19,14 @@ func ClonDATABLE(o dboAdapter, table model.Object) bool {
 	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil) // Crea un nuevo contexto y comienza una transacción
 	if err != nil {
-		log.Println(err)
-		return false
+		return err
 	}
-
 	defer tx.Rollback()
 
-	if !ClonOneTableInTransaction(o, table, tx, ctx) {
+	err = ClonOneTableInTransaction(o, table, tx, ctx)
+	if err != nil {
 		tx.Rollback()
-		return false
+		return err
 	}
 
 	// Finalmente, si no se reciben errores de las consultas, confirme la transacción
@@ -36,26 +34,23 @@ func ClonDATABLE(o dboAdapter, table model.Object) bool {
 	err = tx.Commit()
 	if err != nil {
 		tx.Rollback()
-		log.Fatal(err)
-		return false
+		return err
 	}
 
-	return true
+	return nil
 }
 
 // ClonOneTableInTransaction copia la data de una tabla a otra nueva
-func ClonOneTableInTransaction(o dboAdapter, table model.Object, tx *sql.Tx, ctx context.Context) bool {
+func ClonOneTableInTransaction(o dboAdapter, table *model.Object, tx *sql.Tx, ctx context.Context) error {
 
 	// fmt.Printf("Clon Object: %v\n", table.Name)
-	var ok bool
 	tableTempName := `tabtemp`
 
 	// 1 renombrar tabla
 	_, err := tx.ExecContext(ctx, `ALTER TABLE `+table.Name+` RENAME TO `+tableTempName+`;`)
 	if err != nil {
-		log.Printf("!!! error %v al renombrar tabla %v", err, table.Name)
 		tx.Rollback()
-		return false
+		return fmt.Errorf("!!! error %v al renombrar tabla %v", err, table.Name)
 	}
 	// fmt.Printf(">>>[1] RENOMBRAR TABLA TABLA: %v\n", tableTempName)
 
@@ -65,7 +60,7 @@ func ClonOneTableInTransaction(o dboAdapter, table model.Object, tx *sql.Tx, ctx
 	_, err = tx.ExecContext(ctx, sqlNewTable)
 	if err != nil {
 		tx.Rollback()
-		return false
+		return err
 	}
 	//3 seleccionar data anterior
 	var oldfield []string
@@ -73,17 +68,17 @@ func ClonOneTableInTransaction(o dboAdapter, table model.Object, tx *sql.Tx, ctx
 	// fmt.Printf(">>>[3] SELECCIONAR DATA ANTERIOR SQL OLDFIELD: %v\n", sqlOldField)
 
 	// knames, ok = tx.getallOBJ(&q, &ctx)
-	var knames = make([]map[string]string, 0)
-	if knames, ok = SelectAll(sqlOldField, o, ctx); !ok { //entrega nombre columnas de la tabla
+	knames, err := SelectAll(sqlOldField, o, ctx) //entrega nombre columnas de la tabla
+	if err != nil {
 		tx.Rollback()
-		return false
+		return err
 	}
+
 	// fmt.Printf(">>>[4] %v COLUMNAS PARA COPIAR: %v\n", len(knames), knames)
 
 	if len(knames) == 0 {
 		tx.Rollback()
-		log.Println("!!! error sin columnas para copiar")
-		return false
+		return fmt.Errorf("!!! error sin columnas para copiar")
 	}
 
 	for _, d := range knames {
@@ -110,9 +105,8 @@ func ClonOneTableInTransaction(o dboAdapter, table model.Object, tx *sql.Tx, ctx
 	// fmt.Printf(">>> copiando data %v\n", table.Name)
 	_, err = tx.ExecContext(ctx, sqlInsert)
 	if err != nil {
-		log.Printf("!!! error %v al copiar data de %v a tabla %v", err, tableTempName, table.Name)
 		tx.Rollback()
-		return false
+		return fmt.Errorf("!!! error %v al copiar data de %v a tabla %v", err, tableTempName, table.Name)
 	}
 	// fmt.Printf(">>>[6] DATA COPIADA: %v\n", table.Name)
 	// fmt.Printf(">>> data copiada: %v\n", table.Name)
@@ -122,11 +116,11 @@ func ClonOneTableInTransaction(o dboAdapter, table model.Object, tx *sql.Tx, ctx
 	// log.Printf(">> sql droptab : %v", q)
 	_, err = tx.ExecContext(ctx, sqlDelete)
 	if err != nil {
-		log.Printf("!!! error %v al borrar tabla temporal %v", err, table.Name)
 		tx.Rollback()
-		return false
+		return fmt.Errorf("!!! error %v al borrar tabla temporal %v", err, table.Name)
 	}
 
 	fmt.Printf(">>> TABLA: %v CLONADA OK\n", table.Name)
-	return true
+
+	return nil
 }
