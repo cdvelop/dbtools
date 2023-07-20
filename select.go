@@ -5,11 +5,8 @@ import (
 	"fmt"
 )
 
-func SelectOne(sql string, dba dbAdapter, ctx context.Context) (map[string]string, error) {
-	db := dba.Open()
-	defer db.Close()
-
-	rows, err := db.QueryContext(ctx, sql)
+func SelectOne(sql string, o dboAdapter, ctx context.Context) (map[string]string, error) {
+	rows, err := o.Open().QueryContext(ctx, sql)
 	if err != nil {
 		return nil, fmt.Errorf("error QueryContext in SelectOne %v", err)
 	}
@@ -17,12 +14,8 @@ func SelectOne(sql string, dba dbAdapter, ctx context.Context) (map[string]strin
 	return FetchOne(rows)
 }
 
-// SelectAll...
-func SelectAll(sql string, dba dbAdapter, ctx context.Context) ([]map[string]string, error) {
-	db := dba.Open()
-	defer db.Close()
-
-	rows, err := db.QueryContext(ctx, sql)
+func SelectAll(sql string, o dboAdapter, ctx context.Context) ([]map[string]string, error) {
+	rows, err := o.Open().QueryContext(ctx, sql)
 	if err != nil {
 		return nil, fmt.Errorf("error QueryContext in SelectAll %v", err)
 	}
