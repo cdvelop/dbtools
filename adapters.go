@@ -23,4 +23,6 @@ type OrmAdapter interface {
 	SQLDropTable() string
 	//ej: pg: DROP TABLE IF EXISTS $1 CASCADE; sqlite:
 	DropTable() string
+	//ej: pg: SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1)
+	SQLTableExist() string
 }

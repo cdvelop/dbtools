@@ -9,8 +9,8 @@ import (
 	"github.com/cdvelop/model"
 )
 
-// CreateAllTABLES crea todas las tablas de la base de datos
-func CreateAllTABLES(dba dbAdapter, tables ...*model.Object) error {
+// CreateTablesInDB crea todas las tablas de la base de datos
+func CreateTablesInDB(dba dbAdapter, tables ...*model.Object) error {
 	db := dba.Open()
 	defer db.Close()
 
@@ -30,7 +30,7 @@ func CreateAllTABLES(dba dbAdapter, tables ...*model.Object) error {
 	// log.Printf(">>> sql final %v", q)
 
 	if _, err := db.Exec(q); err != nil {
-		return fmt.Errorf("ERROR EN LA CREACIÓN DE TABLAS EN BASE DE DATOS, FUNCIÓN: CreateAllTABLES %v", err)
+		return fmt.Errorf("ERROR EN LA CREACIÓN DE TABLAS EN BASE DE DATOS, FUNCIÓN: CreateTablesInDB %v", err)
 	}
 
 	return nil
