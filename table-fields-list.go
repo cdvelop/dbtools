@@ -26,11 +26,11 @@ func createSqlListByField(table *model.Object) (sqlist, keyList []string) {
 				defaulType += ` UNIQUE`
 			}
 
-			// if table.Name == "provide" {
+			//.Ta == "provide" {
 			// 	fmt.Printf("FIELD : [%v]\n", field)
 			// }
 
-			if primaryKey, primaryKeyThisTable := IdpkTABLA(field.Name, table.Name); primaryKey {
+			if primaryKey, primaryKeyThisTable := IdpkTABLA(field.Name, table.Table); primaryKey {
 				if primaryKeyThisTable {
 					defaulType = defaulType + ` PRIMARY KEY NOT NULL`
 				} else {

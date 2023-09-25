@@ -44,10 +44,10 @@ func CreateOneTABLE(dba dbAdapter, table *model.Object) error {
 	sql := makeSQLCreaTABLE(table)
 
 	if _, err := db.Exec(sql); err != nil {
-		return fmt.Errorf("error al crear tabla %v %v", table.Name, err)
+		return fmt.Errorf("error al crear tabla %v %v", table.Table, err)
 	}
 
-	fmt.Println(">>> Tabla: " + table.Name + " creada")
+	fmt.Println(">>> Tabla: " + table.Table + " creada")
 
 	return nil
 }
@@ -60,7 +60,7 @@ func CreateTableInTransaction(table *model.Object, tx *sql.Tx, ctx context.Conte
 		return err
 	}
 
-	fmt.Printf(">>> Creando tabla: %v en db\n", table.Name)
+	fmt.Printf(">>> Creando tabla: %v en db\n", table.Table)
 	return nil
 }
 
@@ -70,7 +70,7 @@ func makeSQLCreaTABLE(table *model.Object) string {
 
 	column := strings.Join(keyLisTO, ", ")
 	// fmt.Printf("colum tabla: %v  %v\n", table_name, column)
-	return makesqlcretetable(table.Name, column)
+	return makesqlcretetable(table.Table, column)
 }
 
 // sql de creación de tabla
