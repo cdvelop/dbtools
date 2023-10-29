@@ -13,9 +13,9 @@ func createSqlListByField(table *model.Object) (sqlist, keyList []string) {
 		foreignKeyList []string //FOREIGN KEY si los hay
 	)
 
-	for _, field := range table.Fields {
+	for _, field := range table.OnlyRequiredFieldsInDB() {
 
-		if !field.NotRequiredInDB { //solo campos requeridos en db
+		if !field.NotRequiredInDB {
 
 			// for field.Name, valueType := range field {
 			defaulType = ` TEXT`
