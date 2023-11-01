@@ -13,7 +13,7 @@ func createSqlListByField(table *model.Object) (sqlist, keyList []string) {
 		foreignKeyList []string //FOREIGN KEY si los hay
 	)
 
-	for _, field := range table.OnlyRequiredFieldsInDB() {
+	for _, field := range table.OnlyRequiredDbFieldsThisObject() {
 
 		if !field.NotRequiredInDB {
 
