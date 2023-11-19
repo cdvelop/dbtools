@@ -13,7 +13,7 @@ func UpdateTablesTransaction(o dboAdapter, tx *sql.Tx, ctx context.Context, tabl
 
 	for _, table := range tables {
 		//consulta entrega columna nombre
-		q := fmt.Sprintf(o.SQLTableInfo(), table.Name)
+		q := fmt.Sprintf(o.SQLTableInfo(), table.ObjectName)
 		// tableInfo, ok := objectdb.QueryOne(q)
 		tableInfo, err := SelectOne(q, o, ctx)
 		if err != nil {
@@ -23,7 +23,7 @@ func UpdateTablesTransaction(o dboAdapter, tx *sql.Tx, ctx context.Context, tabl
 		if len(tableInfo) == 0 { //si no existe crear tabla nueva
 			return CreateTableInTransaction(table, tx, ctx)
 		} else { //revisar tabla consultar si tiene data
-			list, err := SelectOne("SELECT * FROM "+table.Name+";", o, ctx)
+			list, err := SelectOne("SELECT * FROM "+table.ObjectName+";", o, ctx)
 			if err != nil {
 				return err
 			}

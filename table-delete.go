@@ -33,13 +33,13 @@ func DeleteTABLE(o dboAdapter, table_name string) {
 }
 
 func DeleteTableInTransaction(table *model.Object, o OrmAdapter, tx *sql.Tx, ctx context.Context) error {
-	sql := fmt.Sprintf(o.SQLDropTable(), table.Name)
+	sql := fmt.Sprintf(o.SQLDropTable(), table.ObjectName)
 
 	_, err := tx.ExecContext(ctx, sql)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
-	fmt.Printf(">>> Tabla %v eliminada\n", table.Name)
+	fmt.Printf(">>> Tabla %v eliminada\n", table.ObjectName)
 	return nil
 }

@@ -47,10 +47,10 @@ func ClonOneTableInTransaction(o dboAdapter, table *model.Object, tx *sql.Tx, ct
 	tableTempName := `tabtemp`
 
 	// 1 renombrar tabla
-	_, err := tx.ExecContext(ctx, `ALTER TABLE `+table.Name+` RENAME TO `+tableTempName+`;`)
+	_, err := tx.ExecContext(ctx, `ALTER TABLE `+table.ObjectName+` RENAME TO `+tableTempName+`;`)
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("!!! error %v al renombrar tabla %v", err, table.Name)
+		return fmt.Errorf("!!! error %v al renombrar tabla %v", err, table.ObjectName)
 	}
 	// fmt.Printf(">>>[1] RENOMBRAR TABLA TABLA: %v\n", tableTempName)
 
@@ -64,7 +64,7 @@ func ClonOneTableInTransaction(o dboAdapter, table *model.Object, tx *sql.Tx, ct
 	}
 	//3 seleccionar data anterior
 	var oldfield []string
-	sqlOldField := fmt.Sprintf(o.SQLTableInfo(), table.Name)
+	sqlOldField := fmt.Sprintf(o.SQLTableInfo(), table.ObjectName)
 	// fmt.Printf(">>>[3] SELECCIONAR DATA ANTERIOR SQL OLDFIELD: %v\n", sqlOldField)
 
 	// knames, ok = tx.getallOBJ(&q, &ctx)
@@ -100,13 +100,13 @@ func ClonOneTableInTransaction(o dboAdapter, table *model.Object, tx *sql.Tx, ct
 	//4 copiar data
 	c := strings.Join(toClone, ",") //creando un string separado por ,
 	// INSERT INTO ciudad (idciudad,nombre) SELECT idciudad,nombre FROM temp
-	sqlInsert := fmt.Sprintf("INSERT INTO %v (%v) SELECT %v FROM %v;", table.Name, c, c, tableTempName)
+	sqlInsert := fmt.Sprintf("INSERT INTO %v (%v) SELECT %v FROM %v;", table.ObjectName, c, c, tableTempName)
 	// fmt.Printf(">>> sql insert %v\n", sqlInsert)
 	// fmt.Printf(">>> copiando data %v\n", table.Name)
 	_, err = tx.ExecContext(ctx, sqlInsert)
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("!!! error %v al copiar data de %v a tabla %v", err, tableTempName, table.Name)
+		return fmt.Errorf("!!! error %v al copiar data de %v a tabla %v", err, tableTempName, table.ObjectName)
 	}
 	// fmt.Printf(">>>[6] DATA COPIADA: %v\n", table.Name)
 	// fmt.Printf(">>> data copiada: %v\n", table.Name)
@@ -117,10 +117,10 @@ func ClonOneTableInTransaction(o dboAdapter, table *model.Object, tx *sql.Tx, ct
 	_, err = tx.ExecContext(ctx, sqlDelete)
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("!!! error %v al borrar tabla temporal %v", err, table.Name)
+		return fmt.Errorf("!!! error %v al borrar tabla temporal %v", err, table.ObjectName)
 	}
 
-	fmt.Printf(">>> TABLA: %v CLONADA OK\n", table.Name)
+	fmt.Printf(">>> TABLA: %v CLONADA OK\n", table.ObjectName)
 
 	return nil
 }

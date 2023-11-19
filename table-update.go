@@ -14,7 +14,7 @@ func UpdateTABLES(o dboAdapter, tables ...*model.Object) error {
 	for _, table := range tables {
 
 		//consulta entrega columna nombre
-		q := fmt.Sprintf(o.SQLTableInfo(), table.Name)
+		q := fmt.Sprintf(o.SQLTableInfo(), table.ObjectName)
 
 		rows, err := db.Query(q)
 		if err != nil {
@@ -30,7 +30,7 @@ func UpdateTABLES(o dboAdapter, tables ...*model.Object) error {
 			CreateOneTABLE(o, table)
 		} else { //revisar tabla consultar si tiene data
 
-			rows, err := db.Query("SELECT * FROM " + table.Name + ";")
+			rows, err := db.Query("SELECT * FROM " + table.ObjectName + ";")
 			if err != nil {
 				return err
 			}
@@ -41,22 +41,22 @@ func UpdateTABLES(o dboAdapter, tables ...*model.Object) error {
 			}
 
 			if len(list) == 0 { //lista sin data borramos tabla y la creamos nuevamente para no chequearla
-				q := fmt.Sprintf(o.SQLDropTable(), table.Name)
+				q := fmt.Sprintf(o.SQLDropTable(), table.ObjectName)
 
-				fmt.Printf(">>> Borrando tabla: %v", table.Name)
+				fmt.Printf(">>> Borrando tabla: %v", table.ObjectName)
 
 				if _, err := db.Exec(q); err != nil {
-					return fmt.Errorf("!!! Error al borrar tabla DROP TABLE: %v %v", table.Name, err)
+					return fmt.Errorf("!!! Error al borrar tabla DROP TABLE: %v %v", table.ObjectName, err)
 				}
 
-				fmt.Printf(">>> tabla %v sin data borrada\n", table.Name)
+				fmt.Printf(">>> tabla %v sin data borrada\n", table.ObjectName)
 
 				err := CreateOneTABLE(o, table)
 				if err != nil {
 					return err
 				}
 
-				fmt.Printf(">>> tabla %v creada\n", table.Name)
+				fmt.Printf(">>> tabla %v creada\n", table.ObjectName)
 
 			} else { //lista con data hay que actualizar
 				// fmt.Printf("CLon Tabla: %v list: %v\n", table.Name, list)
