@@ -5,20 +5,21 @@ import (
 	"fmt"
 )
 
-func ScanOne(rows *sql.Rows, columnCount int, columns []string) (map[string]string, error) {
+func ScanOne(rows *sql.Rows, columnCount int, columns []string) (row map[string]string, err string) {
+	const this = "ScanOne error "
 	scanFrom := make([]interface{}, columnCount)
 	values := make([]interface{}, columnCount)
 	for i := range scanFrom {
 		scanFrom[i] = &values[i]
 	}
-	err := rows.Scan(scanFrom...)
-	if err != nil {
-		return nil, err
+	e := rows.Scan(scanFrom...)
+	if e != nil {
+		return nil, this + e.Error()
 	}
 
 	// fmt.Println("VALUES: ", values)
 
-	row := make(map[string]string)
+	row = make(map[string]string)
 	//Construye el mapa asociativo a partir de valores y nombres de columna
 	for i := range values {
 		if values[i] == nil {
@@ -29,5 +30,5 @@ func ScanOne(rows *sql.Rows, columnCount int, columns []string) (map[string]stri
 		}
 		// row[columns[i]] = values[i]
 	}
-	return row, nil
+	return row, ""
 }

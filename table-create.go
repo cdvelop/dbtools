@@ -10,14 +10,14 @@ import (
 )
 
 // CreateTablesInDB crea todas las tablas de la base de datos
-func CreateTablesInDB(dba dbAdapter, tables ...*model.Object) error {
+func CreateTablesInDB(dba dbAdapter, tables ...*model.Object) (err string) {
 	db := dba.Open()
 	defer db.Close()
 
 	var sql []string
 
 	if len(tables) == 0 {
-		return fmt.Errorf("error no hay objetos ingresados para crear tablas")
+		return "error no hay objetos ingresados para crear tablas"
 	}
 
 	//todo el sql por tabla
@@ -29,39 +29,39 @@ func CreateTablesInDB(dba dbAdapter, tables ...*model.Object) error {
 	q := strings.Join(sql, "\n")
 	// log.Printf(">>> sql final %v", q)
 
-	if _, err := db.Exec(q); err != nil {
-		return fmt.Errorf("ERROR EN LA CREACIÓN DE TABLAS EN BASE DE DATOS, FUNCIÓN: CreateTablesInDB %v", err)
+	if _, e := db.Exec(q); e != nil {
+		return "ERROR EN LA CREACIÓN DE TABLAS EN BASE DE DATOS, FUNCIÓN: CreateTablesInDB " + e.Error()
 	}
 
-	return nil
+	return ""
 }
 
 // CreateOneTABLE según nombre tabla y solo con un id_nombretabla correlativo por defecto
-func CreateOneTABLE(dba dbAdapter, table *model.Object) error {
+func CreateOneTABLE(dba dbAdapter, table *model.Object) (err string) {
 	db := dba.Open()
 	defer db.Close()
 
 	sql := makeSQLCreaTABLE(table)
 
-	if _, err := db.Exec(sql); err != nil {
-		return fmt.Errorf("error al crear tabla %v %v", table.Table, err)
+	if _, e := db.Exec(sql); e != nil {
+		return "error al crear tabla " + table.Table + " " + e.Error()
 	}
 
 	fmt.Println(">>> Tabla: " + table.Table + " creada")
 
-	return nil
+	return ""
 }
 
-func CreateTableInTransaction(table *model.Object, tx *sql.Tx, ctx context.Context) error {
+func CreateTableInTransaction(table *model.Object, tx *sql.Tx, ctx context.Context) (err string) {
 	sqlNewTable := makeSQLCreaTABLE(table)
-	_, err := tx.ExecContext(ctx, sqlNewTable)
-	if err != nil {
+	_, e := tx.ExecContext(ctx, sqlNewTable)
+	if e != nil {
 		tx.Rollback()
-		return err
+		return e.Error()
 	}
 
 	fmt.Printf(">>> Creando tabla: %v en db\n", table.Table)
-	return nil
+	return ""
 }
 
 // makeSQLCreaTABLE crea string sql crea tabla
