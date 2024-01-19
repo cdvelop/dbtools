@@ -2,10 +2,11 @@ package dbtools
 
 import (
 	"context"
+	"database/sql"
 )
 
-func SelectOne(sql string, o dboAdapter, ctx context.Context) (out map[string]string, err string) {
-	rows, e := o.Open().QueryContext(ctx, sql)
+func TxSelectOne(sql string, ctx context.Context, tx *sql.Tx) (out map[string]string, err string) {
+	rows, e := tx.QueryContext(ctx, sql)
 	if e != nil {
 		return nil, "error QueryContext in SelectOne " + e.Error()
 	}
@@ -13,8 +14,8 @@ func SelectOne(sql string, o dboAdapter, ctx context.Context) (out map[string]st
 	return FetchOne(rows)
 }
 
-func SelectAll(sql string, o dboAdapter, ctx context.Context) (out []map[string]string, err string) {
-	rows, e := o.Open().QueryContext(ctx, sql)
+func TxSelectAll(sql string, ctx context.Context, tx *sql.Tx) (out []map[string]string, err string) {
+	rows, e := tx.QueryContext(ctx, sql)
 	if e != nil {
 		return nil, "error QueryContext in SelectAll " + e.Error()
 	}

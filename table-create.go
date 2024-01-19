@@ -12,7 +12,7 @@ import (
 // CreateTablesInDB crea todas las tablas de la base de datos
 func CreateTablesInDB(dba dbAdapter, tables ...*model.Object) (err string) {
 	db := dba.Open()
-	defer db.Close()
+	// defer db.Close()
 
 	var sql []string
 
